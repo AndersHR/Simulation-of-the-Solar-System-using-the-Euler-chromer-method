@@ -2,8 +2,9 @@ from numpy import load, arange, empty
 from matplotlib.pyplot import figure, subplot2grid, plot, text, xlim, ylim, xlabel,ylabel, rc, legend, show, subplot, title
 from matplotlib import animation
 
+#Creates an animated plot from an already calculated simulation of the Solar system
 if __name__ == "__main__":
-    solar_system_coords = load('Solar_System_coords.npz')
+    solar_system_coords = load('Solar_System_coords.npz')   # Simulation data loaded from the Solar_System_coords.npz-file
 
     x_coords = solar_system_coords['x']
     y_coords = solar_system_coords['y']
