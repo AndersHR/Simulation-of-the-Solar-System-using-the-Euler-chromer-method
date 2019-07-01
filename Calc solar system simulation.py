@@ -10,6 +10,8 @@ pp = PdfPages('solar system.pdf')
 def calculate_r(x_1,y_1,x_0,y_0):
     return np.sqrt((x_1 - x_0)**2 + (y_1 - y_0)**2)
 
+# Initial conditions are chosen such that every planet is found at either its perihilion or aphelion radius and speed,
+# and positioned either at the x-axis or y-axis
 def get_initial_conditions(a,e,M_p,M_s):
     GM = 4*(np.pi**2)
     v_p = np.sqrt(GM)*np.sqrt(((1+e)/(a*(1-e)))*(1 + M_p/M_s))#Max, at perihilion
@@ -47,7 +49,7 @@ def get_initial_lists(a_list,e_list,mass):
     
     return velocities_perihelion,velocities_aphelion,positions_perihelion,positions_aphelion
         
-
+# Calculates the instantaneous attracting force vector F = (F_x,F_y) on mass M_1 at coords (x_1, y_1) from mass M_0 at (x_0,y_0)
 def calculate_centralforce(x_1,y_1,x_0,y_0,M_1,M_0):
     M_s = 333480 #Mass of the sun in earth masses
     beta = 2
@@ -57,6 +59,7 @@ def calculate_centralforce(x_1,y_1,x_0,y_0,M_1,M_0):
     F_y = (GM*(y_0 - y_1))/(r**(beta+1))
     return F_x,F_y
 
+# Single iteration of the Euler-Cromer method
 def Euler_Cromer_method(i,positions,velocities,mass,dt):
     x_0 = positions[2*i]
     y_0 = positions[2*i + 1]    
@@ -89,13 +92,14 @@ def Euler_Cromer_method(i,positions,velocities,mass,dt):
     y_new = y_0 + vy_new*dt
     
     return x_new,y_new,vx_new,vy_new
-    
+
+# Calculate the actual simulation from the chosen initial conditions
 def solar_system():
     # 0:Mercury, 1:Venus, 2:Earth, 3:Eros(asteroid), 4:Mars, 5:Jupiter, 6:Saturn, 7:Uranus
     # 8: Neptune, 9:Pluto, 10:Halley's comet
-    semimajor_axis = [0.3871,0.7233,1.000,1.4583,1.5237,5.2028,9.5388,19.191,30.061,39.529,18]
+    semimajor_axis = [0.3871,0.7233,1.000,1.4583,1.5237,5.2028,9.5388,19.191,30.061,39.529,18]  # Distance in AU
     eccentricity = [0.2056,0.0068,0.0167,0.2230,0.0934,0.0483,0.0560,0.046,0.0100,0.2484,0.967]
-    mass = [0.0553,0.8150,1.000,2*(10**(-9)),0.1074,317.89,95.16,14.56,17.15,0.002,10**(-10)]
+    mass = [0.0553,0.8150,1.000,2*(10**(-9)),0.1074,317.89,95.16,14.56,17.15,0.002,10**(-10)]   # Mass in Earth masses
     
     velocities_perihelion,velocities_aphelion,positions_perihelion,positions_aphelion = get_initial_lists(semimajor_axis,
                                                                                                           eccentricity,mass)
@@ -105,12 +109,14 @@ def solar_system():
     total_positions = [current_positions]    
     total_velocities = [current_velocities] 
     
+    # Time in years
     t = 0
     dt = 0.001
     end = 500
     
     time = [t]    
     
+    # Main program loop
     while t < end:
         t += dt
         time.append(t)
@@ -132,7 +138,8 @@ def solar_system():
     all_x_coordinates, all_y_coordinates = process_positionlists(total_positions)
     #plot_solar_system(all_x_coordinates,all_y_coordinates,end,dt)
     save_plot(all_x_coordinates,all_y_coordinates,end,dt)
-                                                                                              
+
+# Processes the x- and y-coordinate arrays of all planets into a more suitable format
 def process_positionlists(total_positions):
     all_x_coordinates = []
     all_y_coordinates = []    
@@ -176,7 +183,10 @@ def plot_solar_system(all_x_coordinates,all_y_coordinates,end,dt):
     ax = plt.ylabel('$y$ (AU)',fontsize=8)
     ax = plt.rc('xtick',labelsize=8)
     ax = plt.rc('ytick',labelsize=8)
-
+    
+    
+    # Saves all data from the calculated simulation to the file Solar_System_coords.npz for plotting-purposes
+    # such as to avoid unnecessary calculation later
     np.savez('Solar_System_coords',x=all_x_coordinates,y=all_y_coordinates)
 
     for planet in range(len(all_x_coordinates)):
@@ -189,6 +199,7 @@ def plot_solar_system(all_x_coordinates,all_y_coordinates,end,dt):
     
     pp.savefig(ax = plt.gcf)
 
+# Saves plot of the resulting simulation to an pdf-file
 def save_plot(all_x_coordinates,all_y_coordinates,end,dt):
     with PdfPages('simulation.pdf') as pdf:
 
